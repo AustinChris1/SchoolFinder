@@ -1,12 +1,20 @@
-# React + Vite
+# School Finder Abuja
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Live Demo:** [https://schoolfinderabj.web.app](https://schoolfinderabj.web.app)
 
-Currently, two official plugins are available:
+## Project Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+School Finder Abuja is a web application designed to help users efficiently locate and filter schools in Nigeria. The application provides a seamless and fast user experience by employing modern data-fetching and state-management techniques.
 
-## Expanding the ESLint configuration
+## Key Features
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+* **Filter by School Level**: Users can easily filter schools by their level, including Primary, Secondary, and Tertiary.
+* **Instant Filtering**: Thanks to a "fetch-once-and-cache" strategy, the app loads all school data on initial page load, eliminating network delays when a user switches between school levels. This provides a fast and responsive interface.
+* **Intuitive Interface**: The application is built to be simple and easy to use, allowing users to find the information they need without any hassle.
+
+## Technology Stack
+
+* **React**: The project is built with React for a component-based and efficient user interface.
+* **JavaScript (JSX)**: The core logic and components are written in JavaScript with JSX syntax.
+* **JSON**: School data is stored and fetched from local JSON files, which is central to the application's performance.
+
