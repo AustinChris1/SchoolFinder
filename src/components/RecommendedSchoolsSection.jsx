@@ -1,12 +1,22 @@
 import React, { useMemo, useState, useCallback } from 'react';
-import { GoogleMap, Marker, InfoWindow } from '@react-google-maps/api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPinned, Loader2, AlertCircle, MapPin, Car, BookOpen, Star } from 'lucide-react';
+import ReactPaginate from 'react-paginate';
+import { MapPinned, Loader2, AlertCircle, MapPin, Car, BookOpen, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+});
 
 // Haversine formula to calculate distance between two lat/lng points
 const haversineDistance = (coords1, coords2) => {
   const toRad = (x) => (x * Math.PI) / 180;
-  const R = 6371; 
+  const R = 6371;
 
   const dLat = toRad(coords2.lat - coords1.lat);
   const dLng = toRad(coords2.lng - coords1.lng);
@@ -14,9 +24,9 @@ const haversineDistance = (coords1, coords2) => {
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(toRad(coords1.lat)) *
-      Math.cos(toRad(coords2.lat)) *
-      Math.sin(dLng / 2) *
-      Math.sin(dLng / 2);
+    Math.cos(toRad(coords2.lat)) *
+    Math.sin(dLng / 2) *
+    Math.sin(dLng / 2);
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c; // Distance in km
@@ -26,18 +36,46 @@ const mapContainerStyle = {
   width: '100%',
   height: '400px',
   borderRadius: '1rem',
+  zIndex: 0,
 };
 
-const RecommendedSchoolsSection = ({ userLocation, allSchools, onSelectSchool }) => {
+const userIcon = L.icon({
+  iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+const ITEMS_PER_PAGE = 5;
+
+const RecommendedSchoolsSection = ({ userLocation, allSchools, onSelectSchool, schoolLevelFilter }) => {
   const [selectedSchool, setSelectedSchool] = useState(null);
   const [activeSchool, setActiveSchool] = useState(null);
+  const [currentPage, setCurrentPage] = useState(0); 
 
   const recommendedSchools = useMemo(() => {
     if (!userLocation || !allSchools || allSchools.length === 0) {
       return [];
     }
 
-    const schoolsWithDistance = allSchools
+    let schoolsToConsider = allSchools;
+    if (schoolLevelFilter) {
+      schoolsToConsider = allSchools.filter(school => {
+        const level = school.school_level?.toLowerCase();
+        if (schoolLevelFilter.toLowerCase() === 'primary') {
+          return level === 'primary';
+        } else if (schoolLevelFilter.toLowerCase() === 'secondary') {
+          return ['jss only', 'jss and sss', 'sss only'].includes(level);
+        } else if (schoolLevelFilter.toLowerCase() === 'tertiary') {
+          return ['tertiary', 'university'].includes(level);
+        }
+        return true; 
+      });
+    }
+
+    const schoolsWithDistance = schoolsToConsider 
       .map((school) => {
         if (typeof school.lat === 'number' && typeof school.lng === 'number') {
           const distance = haversineDistance(userLocation, {
@@ -50,8 +88,18 @@ const RecommendedSchoolsSection = ({ userLocation, allSchools, onSelectSchool })
       })
       .filter(Boolean);
 
-    return schoolsWithDistance.sort((a, b) => a.distance - b.distance).slice(0, 10);
-  }, [userLocation, allSchools]);
+    return schoolsWithDistance.sort((a, b) => a.distance - b.distance).slice(0, 15);
+  }, [userLocation, allSchools, schoolLevelFilter]); 
+
+  const schoolsForPage = useMemo(() => {
+    const offset = currentPage * ITEMS_PER_PAGE;
+    return recommendedSchools.slice(offset, offset + ITEMS_PER_PAGE);
+  }, [currentPage, recommendedSchools]);
+
+  const handlePageClick = (event) => {
+    setCurrentPage(event.selected);
+    document.getElementById('recommended-schools-list').scrollIntoView({ behavior: 'smooth' });
+  };
 
   const handleMarkerClick = useCallback((school) => {
     setSelectedSchool(school);
@@ -69,23 +117,15 @@ const RecommendedSchoolsSection = ({ userLocation, allSchools, onSelectSchool })
     setActiveSchool(null);
   }, []);
 
-  const mapOptions = useMemo(() => ({
-    zoomControl: true,
-    mapTypeControl: false,
-    streetViewControl: false,
-    fullscreenControl: false,
-    gestureHandling: 'cooperative',
-  }), []);
-
   const mapCenter = useMemo(() => {
     if (userLocation && recommendedSchools.length > 0) {
       const allLats = [userLocation.lat, ...recommendedSchools.map(s => s.lat)];
       const allLngs = [userLocation.lng, ...recommendedSchools.map(s => s.lng)];
       const avgLat = allLats.reduce((sum, val) => sum + val, 0) / allLats.length;
       const avgLng = allLngs.reduce((sum, val) => sum + val, 0) / allLngs.length;
-      return { lat: avgLat, lng: avgLng };
+      return [avgLat, avgLng];
     }
-    return userLocation;
+    return userLocation ? [userLocation.lat, userLocation.lng] : [9.0820, 7.4913];
   }, [userLocation, recommendedSchools]);
 
   const mapZoom = useMemo(() => {
@@ -120,7 +160,7 @@ const RecommendedSchoolsSection = ({ userLocation, allSchools, onSelectSchool })
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          Recommended Schools Near You
+          Recommended {schoolLevelFilter} Schools Near You
         </motion.h2>
 
         <motion.div
@@ -145,69 +185,64 @@ const RecommendedSchoolsSection = ({ userLocation, allSchools, onSelectSchool })
                   Map View
                 </h3>
                 {mapCenter && (
-                  <GoogleMap
-                    mapContainerStyle={mapContainerStyle}
+                  <MapContainer
                     center={mapCenter}
                     zoom={mapZoom}
-                    options={mapOptions}
+                    scrollWheelZoom={false}
+                    style={mapContainerStyle}
                   >
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+
                     <Marker
-                      position={userLocation}
-                      icon={{
-                        path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
-                        fillColor: 'rgb(59, 130, 246)', 
-                        fillOpacity: 1,
-                        strokeWeight: 0,
-                        scale: 2,
-                      }}
+                      position={userLocation ? [userLocation.lat, userLocation.lng] : [9.0820, 7.4913]}
+                      icon={userIcon}
                     />
 
                     {recommendedSchools.map((school) => (
                       <Marker
                         key={school.id}
-                        position={{ lat: school.lat, lng: school.lng }}
-                        onClick={() => handleMarkerClick(school)}
-                      />
-                    ))}
-
-                    {selectedSchool && (
-                      <InfoWindow
-                        position={{ lat: selectedSchool.lat, lng: selectedSchool.lng }}
-                        onCloseClick={handleModalClose}
+                        position={[school.lat, school.lng]}
+                        eventHandlers={{
+                          click: () => handleMarkerClick(school),
+                        }}
                       >
-                        <div className="p-2">
-                          <h4 className="font-bold text-lg">{selectedSchool.school_name}</h4>
-                          <p className="text-sm text-gray-600 flex items-center">
-                            <MapPin size={14} className="mr-1 text-blue-500" />
-                            {selectedSchool.lga}, {selectedSchool.state}
-                          </p>
-                          <p className="text-sm font-semibold text-blue-600 mt-2">
-                            {selectedSchool.distance.toFixed(2)} km away
-                          </p>
-                          <div className="mt-2 text-xs text-gray-500">
-                             <p>Rating: <Star size={12} className="inline-block text-yellow-400" /> {selectedSchool.rating}</p>
-                             <p>Reviews: {selectedSchool.user_ratings_total}</p>
+                        <Popup>
+                          <div className="p-2">
+                            <h4 className="font-bold text-lg">{school.school_name}</h4>
+                            <p className="text-sm text-gray-600 flex items-center">
+                              <MapPin size={14} className="mr-1 text-blue-500" />
+                              {school.lga}, {school.state}
+                            </p>
+                            <p className="text-sm font-semibold text-blue-600 mt-2">
+                              {school.distance.toFixed(2)} km away
+                            </p>
+                            <div className="mt-2 text-xs text-gray-500">
+                              <p>Rating: <Star size={12} className="inline-block text-yellow-400" /> {school.rating}</p>
+                              <p>Reviews: {school.user_ratings_total}</p>
+                            </div>
+                            <button
+                              onClick={() => onSelectSchool(school)}
+                              className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm"
+                            >
+                              View Details
+                            </button>
                           </div>
-                          <button
-                            onClick={() => onSelectSchool(selectedSchool)}
-                            className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm"
-                          >
-                            View Details
-                          </button>
-                        </div>
-                      </InfoWindow>
-                    )}
-                  </GoogleMap>
+                        </Popup>
+                      </Marker>
+                    ))}
+                  </MapContainer>
                 )}
               </div>
-
               <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <Car size={24} className="text-blue-600" />
-                Top 10 Closest Schools
+                Top 15 Closest Schools
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div id="recommended-schools-list" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <AnimatePresence>
-                  {recommendedSchools.map((school) => (
+                  {schoolsForPage.map((school) => (
                     <motion.div
                       key={school.id}
                       variants={cardItemVariants}
@@ -237,7 +272,7 @@ const RecommendedSchoolsSection = ({ userLocation, allSchools, onSelectSchool })
                               <span>{school.rating} ({school.user_ratings_total} reviews)</span>
                             </div>
                           )}
-                           <div className="text-sm text-gray-500 mt-1 flex items-center">
+                          <div className="text-sm text-gray-500 mt-1 flex items-center">
                             <BookOpen size={16} className="text-gray-400 mr-2" />
                             <span>{school.school_level}</span>
                           </div>
@@ -247,14 +282,27 @@ const RecommendedSchoolsSection = ({ userLocation, allSchools, onSelectSchool })
                   ))}
                 </AnimatePresence>
               </div>
+              <div className="mt-8">
+                <ReactPaginate
+                  breakLabel="..."
+                  nextLabel={<ChevronRight size={20} />}
+                  onPageChange={handlePageClick}
+                  pageRangeDisplayed={3}
+                  pageCount={Math.ceil(recommendedSchools.length / ITEMS_PER_PAGE)}
+                  previousLabel={<ChevronLeft size={20} />}
+                  renderOnZeroPageCount={null}
+                  containerClassName={"flex justify-center items-center space-x-2 text-gray-800"}
+                  pageLinkClassName={"w-10 h-10 flex items-center justify-center rounded-full font-semibold transition-colors duration-200 bg-gray-200 hover:bg-blue-200"}
+                  previousLinkClassName={"px-4 py-2 rounded-lg border border-gray-300 disabled:opacity-50"}
+                  nextLinkClassName={"px-4 py-2 rounded-lg border border-gray-300 disabled:opacity-50"}
+                  activeLinkClassName={"!bg-blue-600 !text-white shadow-md hover:!bg-blue-600"}
+                />
+              </div>
             </>
           ) : (
             <div className="text-center py-12 text-gray-600 flex flex-col items-center justify-center">
               <AlertCircle className="text-red-500 mb-3" size={48} />
-              <p>Could not find any nearby schools with valid coordinates.</p>
-              <p className="text-sm mt-2 text-gray-500">
-                Please check your data file for valid latitude and longitude values.
-              </p>
+              <p>Could not find any nearby schools with valid coordinates for the selected level.</p>
             </div>
           )}
         </motion.div>

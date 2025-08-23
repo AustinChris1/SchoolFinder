@@ -16,11 +16,9 @@ const HeroSection = () => {
   const booksRef = useRef([]);
   const diplomaRef = useRef(null);
 
-  // Initialize Three.js Scene
   useEffect(() => {
     if (!threeRef.current) return;
 
-    // Scene setup
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
@@ -263,7 +261,6 @@ const HeroSection = () => {
         }}
       />
 
-      {/* Advanced CSS Background Effects */}
       <div className="absolute inset-0 z-1">
         {/* Glassmorphism elements */}
         <div
@@ -310,7 +307,6 @@ const HeroSection = () => {
         ))}
       </div>
 
-      {/* Main Content */}
       <div className="container mx-auto px-6 text-center z-10 relative">
         {/* Spectacular Headline with Individual Letter Animations */}
         <div className="relative mb-12">

@@ -6,7 +6,6 @@ import {
   ChevronLeft, ChevronRight
 } from 'lucide-react';
 
-// Star Rating Display Component
 const StarRating = ({ rating }) => {
   if (!rating) return null;
   const rounded = Math.round(rating);
@@ -28,16 +27,13 @@ const StarRating = ({ rating }) => {
   );
 };
 
-// Photo Carousel Component
-const PhotoCarousel = ({ photos, schoolName, apiKey }) => {
+const PhotoCarousel = ({ photos, schoolName }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const hasPhotos = photos && photos.length > 0;
+  const hasApiKey = !!import.meta.env.VITE_Maps_API_KEY;
 
-  if (!photos || photos.length === 0) {
-    return (
-      <div className="text-center text-gray-500 py-6">
-        No photos found for this school.
-      </div>
-    );
+  if (!hasPhotos || !hasApiKey) {
+    return null;
   }
 
   const goToPrevious = () => {
@@ -50,16 +46,13 @@ const PhotoCarousel = ({ photos, schoolName, apiKey }) => {
 
   const getPhotoUrl = (photoReference) => {
     const YOUR_API_KEY = import.meta.env.VITE_Maps_API_KEY;
-    if (!YOUR_API_KEY) {
-      return `https://placehold.co/800x450/e2e8f0/4a5568?text=Image+Unavailable`;
-    }
     return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=1200&photoreference=${photoReference}&key=${YOUR_API_KEY}`;
   };
 
   const currentPhoto = photos[currentIndex];
-  
+
   return (
-    <motion.div 
+    <motion.div
       className="relative w-full overflow-hidden rounded-xl shadow-lg border border-gray-200 mb-6 group"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -74,8 +67,7 @@ const PhotoCarousel = ({ photos, schoolName, apiKey }) => {
           e.target.src = 'https://placehold.co/800x450/e2e8f0/4a5568?text=Image+Load+Error';
         }}
       />
-      
-      {/* Navigation Buttons */}
+
       {photos.length > 1 && (
         <>
           <button
@@ -95,7 +87,6 @@ const PhotoCarousel = ({ photos, schoolName, apiKey }) => {
         </>
       )}
 
-      {/* Photo count indicator */}
       {photos.length > 1 && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-xs px-3 py-1 rounded-full backdrop-blur-sm">
           {currentIndex + 1} / {photos.length}
@@ -107,8 +98,6 @@ const PhotoCarousel = ({ photos, schoolName, apiKey }) => {
 
 const SchoolDetailModal = ({ school, onClose }) => {
   if (!school) return null;
-
-  const [apiKey, setApiKey] = useState('YOUR_API_KEY_HERE');
 
   const modalBackdropVariants = {
     hidden: { opacity: 0 },
@@ -167,7 +156,6 @@ const SchoolDetailModal = ({ school, onClose }) => {
             variants={modalContentVariants}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close Button */}
             <motion.button
               onClick={onClose}
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 transition-colors z-10 p-2 rounded-full hover:bg-gray-100"
@@ -178,7 +166,6 @@ const SchoolDetailModal = ({ school, onClose }) => {
               <X className="w-7 h-7" />
             </motion.button>
 
-            {/* School Main Details */}
             <motion.div variants={sectionChildrenVariants}>
               <h2 className="text-3xl md:text-4xl font-extrabold mb-2 text-gray-900 leading-tight">
                 {school.school_name}
@@ -191,9 +178,8 @@ const SchoolDetailModal = ({ school, onClose }) => {
               )}
             </motion.div>
 
-            <PhotoCarousel photos={school.photos} schoolName={school.school_name} apiKey={apiKey} />
+            <PhotoCarousel photos={school.photos} schoolName={school.school_name} />
 
-            {/* Core School Information Grid */}
             <motion.div
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6 mb-8 text-base text-gray-800"
               variants={sectionChildrenVariants}
@@ -203,7 +189,6 @@ const SchoolDetailModal = ({ school, onClose }) => {
               {school.ownership && <div className="flex items-center"><Building size={18} className="mr-3 text-blue-500" /> <strong>Ownership:</strong> {school.ownership}</div>}
               {school.location && <div className="flex items-center"><MapPin size={18} className="mr-3 text-blue-500" /> <strong>Location Type:</strong> {school.location}</div>}
               {school.school_type && <div className="flex items-center"><Briefcase size={18} className="mr-3 text-blue-500" /> <strong>School Type:</strong> {school.school_type}</div>}
-              {school.school_code && <div className="flex items-center"><Globe size={18} className="mr-3 text-blue-500" /> <strong>School Code:</strong> {school.school_code}</div>}
               
               {school.formatted_phone_number && (
                 <div className="flex items-center">
@@ -229,7 +214,6 @@ const SchoolDetailModal = ({ school, onClose }) => {
               {school.fees?.range && <div className="flex items-center"><DollarSign size={18} className="mr-3 text-blue-500" /> <strong>Fees:</strong> {school.fees.range}</div>}
             </motion.div>
 
-            {/* School Reviews Section */}
             <motion.div
               className="border-t border-gray-200 pt-6 mt-6"
               variants={sectionChildrenVariants}
@@ -238,7 +222,6 @@ const SchoolDetailModal = ({ school, onClose }) => {
                 <Globe size={24} className="mr-3 text-blue-600" /> School Insights
               </h3>
 
-              {/* Rating and Reviews */}
               <motion.div variants={sectionChildrenVariants}>
                 {school.rating && (
                   <div className="mb-4">

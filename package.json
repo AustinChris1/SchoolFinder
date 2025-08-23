@@ -21,6 +21,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-leaflet": "^5.0.0",
+    "react-paginate": "^8.3.0",
     "react-router-dom": "^7.6.3",
     "sort-by": "^1.2.0",
     "swiper": "^11.2.10",

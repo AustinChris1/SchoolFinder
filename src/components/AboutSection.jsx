@@ -8,7 +8,6 @@ import {
   Lightbulb,
 } from 'lucide-react';
 
-// Custom SVG for a wavy background shape
 const WavyBackground = () => (
   <svg
     className="absolute top-0 left-0 w-full h-full text-blue-500 opacity-5 pointer-events-none"
@@ -24,7 +23,6 @@ const WavyBackground = () => (
 );
 
 const AboutSection = () => {
-  // Framer Motion Variants for the section container
   const sectionVariants = {
     hidden: { opacity: 0, y: 80 },
     visible: {
@@ -39,13 +37,11 @@ const AboutSection = () => {
     },
   };
 
-  // Variants for individual text blocks/elements
   const textVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
   };
 
-  // Variants for the icon cards
   const cardVariants = {
     hidden: { opacity: 0, scale: 0.8 },
     visible: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 100, damping: 12 } },
@@ -78,7 +74,6 @@ const AboutSection = () => {
         </motion.h2>
 
         <div className="max-w-6xl mx-auto text-lg md:text-xl leading-relaxed space-y-12">
-          {/* Main Introduction - now in a two-column grid on md screens and up */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
             <motion.div variants={textVariants}>
               <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center">
@@ -101,12 +96,10 @@ const AboutSection = () => {
             </motion.div>
           </div>
 
-          {/* Cards Section */}
           <motion.div
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 my-10"
             variants={sectionVariants}
           >
-            {/* Mission Card */}
             <motion.div
               className="bg-white p-8 rounded-2xl shadow-xl border border-gray-200 flex flex-col items-center text-center group"
               variants={cardVariants}
@@ -117,7 +110,6 @@ const AboutSection = () => {
               <p className="text-gray-600 text-sm">To simplify school search, offering quality, affordable, and accessible education options from the comfort of your home.</p>
             </motion.div>
 
-            {/* Current Focus Card */}
             <motion.div
               className="bg-white p-8 rounded-2xl shadow-xl border border-gray-200 flex flex-col items-center text-center group"
               variants={cardVariants}
@@ -128,7 +120,6 @@ const AboutSection = () => {
               <p className="text-gray-600 text-sm">Comprehensive listing of all secondary schools in Abuja, empowering parents in the FCT to make informed choices.</p>
             </motion.div>
 
-            {/* Future Vision Card */}
             <motion.div
               className="bg-white p-8 rounded-2xl shadow-xl border border-gray-200 flex flex-col items-center text-center group"
               variants={cardVariants}
