@@ -1,51 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Mail, Home, Info, Search } from 'lucide-react';
+import SchoolFinderLogo from "/Logo.jpg";
+import CompareButton from './Hooks/CompareButton';
 
-const SchoolFinderLogo = () => (
-  <svg
-    width="48"
-    height="48"
-    viewBox="0 0 48 48"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className="mr-3"
-  >
-    <rect x="14" y="16" width="20" height="24" rx="2" fill="#2563EB" />
-    <path
-      d="M14 16L24 10L34 16"
-      stroke="#1E3A8A"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M18 20V32H30V20M24 20V32"
-      stroke="white"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M8 20L12 16L12 36L8 40V20Z"
-      fill="#2563EB"
-      stroke="#1E3A8A"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M40 20L36 16L36 36L40 40V20Z"
-      fill="#2563EB"
-      stroke="#1E3A8A"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-const Navbar = ({ onSelectLevel, currentLevel }) => {
+const Navbar = ({ onSelectLevel, currentLevel, onOpenCompare }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
   const [isScrolled, setIsScrolled] = useState(false);
@@ -54,7 +13,7 @@ const Navbar = ({ onSelectLevel, currentLevel }) => {
     const element = document.getElementById(sectionId);
     if (element) {
       window.scrollTo({
-        top: element.offsetTop - 80, 
+        top: element.offsetTop - 80,
         behavior: 'smooth',
       });
       setActiveSection(sectionId);
@@ -62,7 +21,7 @@ const Navbar = ({ onSelectLevel, currentLevel }) => {
   }, []);
 
   const handleLinkClick = useCallback((event, section) => {
-    event.preventDefault(); 
+    event.preventDefault();
     setIsMobileMenuOpen(false);
     scrollToSection(section);
   }, [scrollToSection]);
@@ -76,8 +35,8 @@ const Navbar = ({ onSelectLevel, currentLevel }) => {
   useEffect(() => {
     const handleScroll = () => {
       const sections = ['home', 'about', 'schools', 'contact'];
-      const currentScrollPos = window.scrollY + 100; 
-      
+      const currentScrollPos = window.scrollY + 100;
+
       for (let section of sections) {
         const element = document.getElementById(section);
         if (element && element.offsetTop <= currentScrollPos && element.offsetTop + element.offsetHeight > currentScrollPos) {
@@ -141,7 +100,7 @@ const Navbar = ({ onSelectLevel, currentLevel }) => {
         sticky top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out
         ${isScrolled
           ? 'bg-white shadow-lg py-2'
-          : 'bg-white border-b-4 border-blue-800 py-4'
+          : 'py-3'
         }
       `}
       variants={navbarVariants}
@@ -156,7 +115,7 @@ const Navbar = ({ onSelectLevel, currentLevel }) => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <SchoolFinderLogo />
+          <img src={SchoolFinderLogo} alt="School Finder" className='h-14 w-14 pr-2' />
           <span className="text-gray-900 leading-none">
             <span className="block text-xl font-bold">School <span className="text-blue-900">Finder</span></span>
             <span className="block text-sm font-normal text-gray-500">Abuja</span>
@@ -165,7 +124,7 @@ const Navbar = ({ onSelectLevel, currentLevel }) => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-10">
-          <div className="flex items-center space-x-4 p-1 bg-gray-100 rounded-xl shadow-inner">
+          <div className="flex items-center space-x-4 p-1 rounded-xl shadow-inner">
             {schoolLevels.map((level) => (
               <motion.button
                 key={level.value}
@@ -214,6 +173,8 @@ const Navbar = ({ onSelectLevel, currentLevel }) => {
               </AnimatePresence>
             </motion.a>
           ))}
+          <CompareButton onClick={onOpenCompare} />
+
         </nav>
 
         {/* Mobile Menu Toggle Button */}
@@ -316,6 +277,8 @@ const Navbar = ({ onSelectLevel, currentLevel }) => {
                     <span className="mr-3 text-gray-500">{link.icon}</span> {link.name}
                   </motion.a>
                 ))}
+                <CompareButton onClick={onOpenCompare} />
+
               </div>
             </motion.nav>
           </>

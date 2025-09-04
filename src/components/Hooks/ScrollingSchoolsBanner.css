@@ -1,0 +1,14 @@
+.scrolling-text {
+    display: flex;
+}
+
+
+.school-item {
+    cursor: pointer;
+    transition: transform 0.3s ease-in-out;
+}
+
+.school-item:hover {
+    transform: scale(1.1);
+}
+

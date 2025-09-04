@@ -15,6 +15,7 @@ School Finder Abuja is a web application designed to help users efficiently loca
 ## Technology Stack
 
 * **React**: The project is built with React for a component-based and efficient user interface.
+* **TailWindCSS**: For styling.
 * **JavaScript (JSX)**: The core logic and components are written in JavaScript with JSX syntax.
 * **JSON**: School data is stored and fetched from local JSON files, which is central to the application's performance.
 

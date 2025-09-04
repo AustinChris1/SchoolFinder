@@ -34,7 +34,7 @@ const haversineDistance = (coords1, coords2) => {
 
 const mapContainerStyle = {
   width: '100%',
-  height: '400px',
+  height: '300px',
   borderRadius: '1rem',
   zIndex: 0,
 };
